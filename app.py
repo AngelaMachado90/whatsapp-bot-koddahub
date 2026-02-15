@@ -32,13 +32,12 @@ if not all([WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_VERIFY_TOK
     if not WHATSAPP_VERIFY_TOKEN:
         logger.error("- WHATSAPP_VERIFY_TOKEN nao configurado")
 
-# Inicializar cliente WhatsApp
+# Inicializar cliente WhatsApp - SEM callback_url para evitar erro
 try:
     wa = WhatsApp(
         phone_id=WHATSAPP_PHONE_NUMBER_ID,
         token=WHATSAPP_ACCESS_TOKEN,
         server=app,
-        callback_url="https://seu-dominio.railway.app/webhook",  # Será atualizado depois
         verify_token=WHATSAPP_VERIFY_TOKEN
     )
     logger.info("Cliente WhatsApp inicializado com sucesso")
@@ -97,7 +96,6 @@ def handle_message(client: WhatsApp, msg: Message):
 def api_enviar_mensagem():
     """
     Endpoint para seu site enviar mensagens
-    Quando alguém preenche um formulário, você pode enviar uma mensagem automática
     """
     try:
         data = request.json
@@ -105,20 +103,16 @@ def api_enviar_mensagem():
         mensagem = data.get('mensagem', '')
         nome = data.get('nome', 'Cliente')
         
-        # Validar
         if not telefone:
             return jsonify({"erro": "Telefone é obrigatório"}), 400
         if not mensagem:
             return jsonify({"erro": "Mensagem é obrigatória"}), 400
         
-        # Formatar número (remover caracteres especiais)
         telefone = ''.join(filter(str.isdigit, telefone))
         
-        # Adicionar código do país se não tiver
         if not telefone.startswith('55'):
             telefone = '55' + telefone
         
-        # Enviar mensagem via WhatsApp
         if wa:
             wa.send_message(to=telefone, text=mensagem)
             logger.info(f"Mensagem enviada para {telefone}")
@@ -134,7 +128,7 @@ def api_enviar_mensagem():
 @app.route('/api/notificar-admin', methods=['POST'])
 def api_notificar_admin():
     """
-    Endpoint para notificar o administrador quando alguém usar o site
+    Endpoint para notificar o administrador
     """
     try:
         data = request.json
@@ -144,8 +138,7 @@ def api_notificar_admin():
         mensagem = data.get('mensagem', '')
         origem = data.get('origem', 'formulario do site')
         
-        # Número do administrador (seu número)
-        SEU_NUMERO = "5541992272854"  # Ajuste conforme seu número
+        SEU_NUMERO = "5541992272854"
         
         texto = f"Nova mensagem do site\n\n"
         texto += f"Nome: {nome}\n"
@@ -154,7 +147,6 @@ def api_notificar_admin():
         texto += f"Origem: {origem}\n"
         texto += f"Mensagem: {mensagem}"
         
-        # Enviar para seu WhatsApp
         if wa:
             wa.send_message(to=SEU_NUMERO, text=texto)
             logger.info(f"Administrador notificado sobre mensagem de {nome}")
@@ -188,7 +180,6 @@ def health():
 def verify_webhook():
     """
     Endpoint de verificacao do webhook
-    O Meta chama este endpoint para validar o webhook
     """
     mode = request.args.get('hub.mode')
     token = request.args.get('hub.verify_token')
@@ -205,7 +196,6 @@ def verify_webhook():
 def webhook():
     """
     Endpoint que recebe as mensagens do WhatsApp
-    O PyWa processa automaticamente
     """
     return "OK", 200
 
