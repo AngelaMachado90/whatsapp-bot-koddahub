@@ -1,0 +1,13 @@
+{
+  "instances": [
+    {
+      "id": "inst_1771428581341_z04wq9",
+      "name": "KoddaHub-Bot-Whats",
+      "number": "+55 41 9227-2854",
+      "status": "connected",
+      "createdAt": "2026-02-18T15:29:41.341Z",
+      "webhookUrl": "https://www.koddahub.com.br/webhook/whatsapp/inst_1771428581341_z04wq9",
+      "connectedAt": "2026-02-18T19:40:47.597Z"
+    }
+  ]
+}
